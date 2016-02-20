@@ -57,7 +57,6 @@ namespace LearnNewWord
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
             Word.Text = string.Empty;
-            Mean.Text = string.Empty;
             if (this.WindowState != WindowState.Normal)
             {
                 Topmost = true;
@@ -92,15 +91,22 @@ namespace LearnNewWord
 
             if (_isKana)
             {
+                Word.Inlines.Add(new LineBreak());
                 Word.Inlines.Add(new Run($"「{kana}」")
                 {
-                    FontSize = 20
+                    FontSize = 18,
+                    FontStyle = FontStyles.Italic
                 });
             }
 
             if (_isMean)
             {
-                Mean.Text = mean;
+                Word.Inlines.Add(new LineBreak());
+                Word.Inlines.Add(new Run(mean)
+                {
+                    FontSize = 20,
+                    FontWeight = FontWeights.DemiBold
+                });
             }
         }
 
