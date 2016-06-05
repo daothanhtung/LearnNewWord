@@ -12,7 +12,7 @@
         >
     <Grid Background="CadetBlue" >
         
-        <TextBlock Name="Word" FontWeight="Bold" FontSize="25" VerticalAlignment="Top" Margin="5" TextWrapping="Wrap">道路「どうろ」</TextBlock>
+        <TextBlock Name="Word" VerticalAlignment="Top" Margin="5" TextWrapping="Wrap"></TextBlock>
         
         <Button Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Right" Height="20" Width="20" Background="DarkGray" Click="ButtonExit_OnClick">x</Button>
     </Grid>

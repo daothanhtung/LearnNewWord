@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LearnNewWord
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
@@ -54,25 +44,85 @@ namespace LearnNewWord
                 string filePath = (item.Tag as FileInfo).FullName;
                 int time2Next = 1000;
                 int.TryParse(TbTimeToNext.Text, out time2Next);
-                var notifier = new Notifier(filePath,time2Next, CbWord.IsChecked != null && (bool) CbWord.IsChecked, CbKana.IsChecked != null && (bool)CbKana.IsChecked, CbMean.IsChecked != null && (bool)CbMean.IsChecked);
+                var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
+                                    select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
+                var notifier = new Notifier(filePath,
+                    time2Next,
+                    CbWord.IsChecked != null && (bool)CbWord.IsChecked,
+                    CbKana.IsChecked != null && (bool)CbKana.IsChecked,
+                    CbMean.IsChecked != null && (bool)CbMean.IsChecked,
+                    CbShuffle.IsChecked != null && (bool)CbShuffle.IsChecked,
+                    selectedPart
+                    );
                 notifier.Closed += NotifierOnClosed;
-                this.Visibility = Visibility.Hidden;
+                Visibility = Visibility.Hidden;
                 notifier.Topmost = true;
 
-                notifier.Top = System.Windows.SystemParameters.WorkArea.Height - notifier.Height - 10;
-                notifier.Left = System.Windows.SystemParameters.WorkArea.Width - notifier.Width - 20;
+                notifier.Top = SystemParameters.WorkArea.Height - notifier.Height - 10;
+                notifier.Left = SystemParameters.WorkArea.Width - notifier.Width - 20;
                 notifier.Show();
             }
         }
 
         private void NotifierOnClosed(object sender, EventArgs eventArgs)
         {
-            this.Visibility = Visibility.Visible;
+            Visibility = Visibility.Visible;
         }
 
         private void ComboBoxFile_OnDropDownOpened(object sender, EventArgs e)
         {
             InitializeData();
+        }
+
+        private void ButtonCheckAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            var listItem = ListBoxPart.Items.OfType<CheckBox>();
+            foreach (var checkBox in listItem)
+            {
+                checkBox.IsChecked = true;
+            }
+        }
+
+        private void ButtonUncheckAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            var listItem = ListBoxPart.Items.OfType<CheckBox>();
+            foreach (var checkBox in listItem)
+            {
+                checkBox.IsChecked = false;
+            }
+        }
+
+        private void ComboBoxFile_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboBoxFile.SelectedItem != null)
+            {
+                var item = ComboBoxFile.SelectedItem as ComboBoxItem;
+                string filePath = (item.Tag as FileInfo).FullName;
+                AnalyseFile(filePath);
+            }
+        }
+
+        private void AnalyseFile(string filePath)
+        {
+            ListBoxPart.Items.Clear();
+            if (File.Exists(filePath))
+            {
+                var arr = File.ReadAllLines(filePath);
+                var pattern = @"#.+#";
+                foreach (var s in arr)
+                {
+                    if (Regex.IsMatch(s, pattern))
+                    {
+                        var match = Regex.Match(s, @"#(.+)#");
+                        var value = match.Groups[1].Value;
+                        var checkBox = new CheckBox();
+                        checkBox.Content = value;
+                        checkBox.IsChecked = true;
+                        checkBox.IsThreeState = false;
+                        ListBoxPart.Items.Add(checkBox);
+                    }
+                }
+            }
         }
     }
 }

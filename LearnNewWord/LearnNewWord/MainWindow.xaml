@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LearnNewWord"
         mc:Ignorable="d"
-        Title="MainWindow" Height="150" Width="300"
+        Title="MainWindow" Height="290" Width="323"
         WindowStyle="ToolWindow"
         ResizeMode="NoResize"
         FontSize="15">
@@ -14,13 +14,15 @@
             <RowDefinition Height="25"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
-            <ComboBox Margin="0,0,10,0" Name="ComboBoxFile" DropDownOpened="ComboBoxFile_OnDropDownOpened"></ComboBox>
+            <ComboBox Margin="0,0,10,0" Name="ComboBoxFile" DropDownOpened="ComboBoxFile_OnDropDownOpened" SelectionChanged="ComboBoxFile_OnSelectionChanged"></ComboBox>
             <Button Grid.Column="1"  Click="ButtonStart_OnClick">Start</Button>
         </Grid>
         <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
@@ -28,10 +30,18 @@
             <TextBox Width="60" Margin="0,0,5,0" Name="TbTimeToNext" TextAlignment="Right">1000</TextBox>
             <Label Content="ms"></Label>
         </StackPanel>
-        <StackPanel Grid.Row="2" VerticalAlignment="Center" Orientation="Horizontal">
-            <CheckBox Margin="0,0,5,0" Name="CbWord" IsThreeState="False" IsChecked="True">Từ vựng</CheckBox>
-            <CheckBox Margin="0,0,5,0" Name="CbKana" IsThreeState="False" IsChecked="True">Kana</CheckBox>
-            <CheckBox Name="CbMean" IsThreeState="False" IsChecked="True">Nghĩa</CheckBox>
+        <DockPanel Grid.Row="2" VerticalAlignment="Center">
+            <StackPanel  Orientation="Horizontal" DockPanel.Dock="Left">
+                <CheckBox Margin="0,0,5,0" Name="CbWord" IsThreeState="False" IsChecked="True">Từ vựng</CheckBox>
+                <CheckBox Margin="0,0,5,0" Name="CbKana" IsThreeState="False" IsChecked="True">Kana</CheckBox>
+                <CheckBox Margin="0,0,0,0" Name="CbMean" IsThreeState="False" IsChecked="True">Nghĩa</CheckBox>
+            </StackPanel>
+            <CheckBox DockPanel.Dock="Right" HorizontalAlignment="Right" Name="CbShuffle" IsThreeState="False" IsChecked="True">Trộn</CheckBox>
+        </DockPanel>
+        <ListBox Grid.Row="3" Name="ListBoxPart"></ListBox>
+        <StackPanel Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+            <Button Margin="5" Click="ButtonCheckAll_OnClick">Check All</Button>
+            <Button Margin="5" Click="ButtonUncheckAll_OnClick">Uncheck All</Button>
         </StackPanel>
     </Grid>
 </Window>

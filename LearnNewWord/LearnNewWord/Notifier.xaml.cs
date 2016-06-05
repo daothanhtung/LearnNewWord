@@ -3,19 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace LearnNewWord
@@ -28,6 +19,7 @@ namespace LearnNewWord
         private readonly bool _isWord;
         private readonly bool _isKana;
         private readonly bool _isMean;
+        private readonly bool _isShuffle;
         private string[] _listString;
         private DispatcherTimer _timer;
         private int _currentN;
@@ -36,46 +28,155 @@ namespace LearnNewWord
             InitializeComponent();
         }
 
-        public Notifier(string filePath, int timeToNext, bool isWord, bool isKana, bool isMean)
+        public Notifier(string filePath, int timeToNext, bool isWord, bool isKana, bool isMean, bool isShuffle)
         {
             _isWord = isWord;
             _isKana = isKana;
             _isMean = isMean;
+            _isShuffle = isShuffle;
             InitializeComponent();
             InitializeData(filePath);
             StartTimer(timeToNext);
         }
 
+        public Notifier(string filePath, int timeToNext, bool isWord, bool isKana, bool isMean, bool isShuffle, bool[] selectedParts)
+        {
+            _isWord = isWord;
+            _isKana = isKana;
+            _isMean = isMean;
+            _isShuffle = isShuffle;
+            InitializeComponent();
+            InitializeData(filePath,selectedParts);
+            StartTimer(timeToNext);
+            Word.Inlines.Clear();
+            Word.Inlines.Add(new Run($"Thời gian chuyển: {timeToNext}\r\nSố lượng từ: {_listString.Length}\r\nThời gian chạy: {(timeToNext * _listString.Length)/1000}s")
+            {
+                FontSize = 20,
+                FontWeight = FontWeights.Bold
+            });
+            
+        }
+
+        private void InitializeData(string filePath, bool[] selectedParts)
+        {
+            if (File.Exists(filePath))
+            {
+                var arr = File.ReadAllLines(filePath);
+                var patternPart = @"#.+#";
+                var pattern = @".*\t.*\t.*";
+                var list = new List<string>();
+                int countPart = 0;
+                bool flag = true;//mark when..
+                foreach (var s in arr)
+                {
+                    if (Regex.IsMatch(s, patternPart))
+                    {
+                        flag = selectedParts[countPart++];
+                    }
+                    else if (flag && !string.IsNullOrWhiteSpace(s) && !s.StartsWith("//") && Regex.IsMatch(s, pattern))
+                    {
+                        list.Add(s);
+                    }
+                }
+                _listString = list.ToArray();
+            }
+            else
+            {
+                Close();
+            }
+        }
+
         private void StartTimer(int timeToNext)
         {
             _timer = new DispatcherTimer();
-            _timer.Tick += TimerOnTick;
+            if (_isShuffle)
+            {
+                _currentN = _listString.Length;
+                _timer.Tick += TimerOnTickShuffle;
+            }
+            else
+            {
+                _currentN = -1;
+                _timer.Tick += TimerOnTickNormal;
+            }
+            
             _timer.Interval = new TimeSpan(0,0,0,0,timeToNext);
             _timer.Start();
         }
 
-        private void TimerOnTick(object sender, EventArgs eventArgs)
+        private void TimerOnTickNormal(object sender, EventArgs e)
         {
+            if (_listString.Length == 0)
+            {
+                _timer.Stop();
+                Close();
+                return;
+            }
+
             Word.Text = string.Empty;
-            if (this.WindowState != WindowState.Normal)
+            if (WindowState != WindowState.Normal)
+            {
+                Topmost = true;
+                IntPtr handle = new WindowInteropHelper(this).Handle;
+                ShowWindow(handle, 4);
+            }
+
+            //get next word
+            if (_currentN == _listString.Length -1)
+            {
+                _currentN = -1;
+                Word.Inlines.Add(new Run("Đã xem hết tất cả các từ.\r\nChuẩn bị xem lại.")
+                {
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold
+                });
+                return;
+            }
+            string s = _listString[++_currentN];
+            //show next word
+            ShowWord(s);
+        }
+
+        private void TimerOnTickShuffle(object sender, EventArgs eventArgs)
+        {
+            if (_listString.Length == 0)
+            {
+                _timer.Stop();
+                Close();
+                return;
+            }
+            Word.Text = string.Empty;
+            if (WindowState != WindowState.Normal)
             {
                 Topmost = true;
                 IntPtr handle = new WindowInteropHelper(this).Handle;
                 ShowWindow(handle, 4);
             }
             //get next word
-            Random random = new Random();
             if (_currentN == 0)
             {
                 _currentN = _listString.Length;
+                Word.Inlines.Add(new Run("Đã xem hết tất cả các từ.\r\nChuẩn bị xem lại.")
+                {
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold
+                });
+                return;
             }
+
+            Random random = new Random();
             int t = random.Next(_currentN);
             string s = _listString[t];
             _listString[t] = _listString[_currentN - 1];
             _listString[_currentN - 1] = s;
             _currentN--;
             //show next word
-            if (string.IsNullOrWhiteSpace(s)) 
+           ShowWord(s);
+        }
+
+        private void ShowWord(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
             {
                 return;
             }
@@ -83,10 +184,14 @@ namespace LearnNewWord
             var word = arr[0];
             var kana = arr[1];
             var mean = arr[2];
-            
+
             if (_isWord)
             {
-                Word.Text = word;
+                Word.Inlines.Add(new Run($"{word}")
+                {
+                    FontSize = 25,
+                    FontWeight = FontWeights.Bold
+                });
             }
 
             if (_isKana)
@@ -95,7 +200,8 @@ namespace LearnNewWord
                 Word.Inlines.Add(new Run($"「{kana}」")
                 {
                     FontSize = 18,
-                    FontStyle = FontStyles.Italic
+                    FontStyle = FontStyles.Italic,
+                    FontWeight = FontWeights.DemiBold
                 });
             }
 
@@ -114,8 +220,7 @@ namespace LearnNewWord
         {
             if (File.Exists(filePath))
             {
-                _listString = System.IO.File.ReadAllLines(filePath).ToList().Where(s => !string.IsNullOrWhiteSpace(s) && Regex.IsMatch(s, @".*\t.*\t.*")).ToArray();
-                _currentN = _listString.Length;
+                _listString = File.ReadAllLines(filePath).ToList().Where(s => !string.IsNullOrWhiteSpace(s) && Regex.IsMatch(s, @".*\t.*\t.*") && !s.StartsWith("//")).ToArray();
             }
             else
             {
@@ -127,7 +232,7 @@ namespace LearnNewWord
         private void ButtonExit_OnClick(object sender, RoutedEventArgs e)
         {
             _timer.Stop();
-            this.Close();
+            Close();
         }
 
         [DllImport("user32.dll")]
