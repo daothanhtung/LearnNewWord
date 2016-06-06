@@ -214,6 +214,8 @@ namespace LearnNewWord
                     FontWeight = FontWeights.DemiBold
                 });
             }
+
+            Topmost = true;
         }
 
         private void InitializeData(string filePath)
