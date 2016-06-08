@@ -55,6 +55,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helper.cs" />
+    <Compile Include="Vocab.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -71,10 +73,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Overview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Notifier.xaml.cs">
       <DependentUpon>Notifier.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overview.xaml.cs">
+      <DependentUpon>Overview.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -101,6 +110,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Asset\preview.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

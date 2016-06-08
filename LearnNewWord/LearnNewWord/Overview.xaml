@@ -1,0 +1,38 @@
+﻿<Window x:Class="LearnNewWord.Overview"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LearnNewWord"
+        mc:Ignorable="d"
+        Title="Overview" Height="400" Width="500">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <CheckBox Margin="0,0,5,0" Name="CbWord" IsThreeState="False" IsChecked="True" Checked="CbWord_OnChecked" Unchecked="CbWord_OnUnchecked">Từ vựng</CheckBox>
+                <CheckBox Margin="0,0,5,0" Name="CbKana" IsThreeState="False" IsChecked="True" Checked="CbKana_OnChecked" Unchecked="CbKana_OnUnchecked">Kana</CheckBox>
+                <CheckBox Margin="0,0,0,0" Name="CbMean" IsThreeState="False" IsChecked="True" Checked="CbMean_OnChecked" Unchecked="CbMean_OnUnchecked">Nghĩa</CheckBox>
+                
+            </StackPanel>
+            <Slider DockPanel.Dock="Right" HorizontalAlignment="Right" Maximum="30" Width="160" Value="15" Name="SliderFontSize"></Slider>
+        </DockPanel>
+        
+        <DataGrid Grid.Row="1" Margin="0,10,0,10"  Name="DataGridVocab" AlternatingRowBackground="AliceBlue" GridLinesVisibility="None" FontSize="{Binding ElementName=SliderFontSize, Path=Value, Mode=TwoWay}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Từ vựng"
+                                Binding="{Binding Word}"
+                                x:Name="ColumnWord"/>
+                <DataGridTextColumn Header="Kana"
+                                Binding="{Binding Kana}"
+                                x:Name="ColumnKana"/>
+                <DataGridTextColumn Header="Nghĩa"
+                                Binding="{Binding Meaning}"
+                                x:Name="ColumnMeaning"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

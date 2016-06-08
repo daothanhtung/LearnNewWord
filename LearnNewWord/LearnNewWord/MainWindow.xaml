@@ -20,10 +20,14 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="25"/>
             </Grid.ColumnDefinitions>
-            <ComboBox Margin="0,0,10,0" Name="ComboBoxFile" DropDownOpened="ComboBoxFile_OnDropDownOpened" SelectionChanged="ComboBoxFile_OnSelectionChanged"></ComboBox>
-            <Button Grid.Column="1"  Click="ButtonStart_OnClick">Start</Button>
+            <ComboBox Margin="0,0,5,0" Name="ComboBoxFile" DropDownOpened="ComboBoxFile_OnDropDownOpened" SelectionChanged="ComboBoxFile_OnSelectionChanged"></ComboBox>
+            <Button Grid.Column="1" Margin="0,0,5,0" Click="ButtonStart_OnClick">Start</Button>
+            <Button Grid.Column="2"  Click="ButtonView_OnClick" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Background="Transparent">
+               <Image Source="Asset/preview.png"/> 
+            </Button>
         </Grid>
         <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
             <Label Content="Time"  Margin="0,0,10,0"></Label>

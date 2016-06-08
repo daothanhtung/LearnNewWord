@@ -46,15 +46,20 @@ namespace LearnNewWord
                 int.TryParse(TbTimeToNext.Text, out time2Next);
                 var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
                                     select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
-                var notifier = new Notifier(filePath,
+                var listVocab = Helper.LoadAllVocabs(filePath, selectedPart);
+                if (listVocab.Count == 0)
+                {
+                    MessageBox.Show("Không có từ vựng", "");
+                    return;
+                }
+                var notifier = new Notifier(listVocab,
                     time2Next,
                     CbWord.IsChecked != null && (bool)CbWord.IsChecked,
                     CbKana.IsChecked != null && (bool)CbKana.IsChecked,
                     CbMean.IsChecked != null && (bool)CbMean.IsChecked,
-                    CbShuffle.IsChecked != null && (bool)CbShuffle.IsChecked,
-                    selectedPart
+                    CbShuffle.IsChecked != null && (bool)CbShuffle.IsChecked
                     );
-                notifier.Closed += NotifierOnClosed;
+                notifier.Closed += ChildWindowOnClosed;
                 Visibility = Visibility.Hidden;
                 notifier.Topmost = true;
 
@@ -64,9 +69,10 @@ namespace LearnNewWord
             }
         }
 
-        private void NotifierOnClosed(object sender, EventArgs eventArgs)
+        private void ChildWindowOnClosed(object sender, EventArgs eventArgs)
         {
             Visibility = Visibility.Visible;
+            Activate();
         }
 
         private void ComboBoxFile_OnDropDownOpened(object sender, EventArgs e)
@@ -122,6 +128,31 @@ namespace LearnNewWord
                         ListBoxPart.Items.Add(checkBox);
                     }
                 }
+            }
+        }
+
+        private void ButtonView_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (ComboBoxFile.SelectedItem != null)
+            {
+                var item = ComboBoxFile.SelectedItem as ComboBoxItem;
+                string filePath = (item.Tag as FileInfo).FullName;
+                
+                var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
+                                    select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
+                var listVocab = Helper.LoadAllVocabs(filePath, selectedPart);
+                if (listVocab.Count == 0)
+                {
+                    MessageBox.Show("Không có từ vựng", "");
+                    return;
+                }
+
+                Visibility = Visibility.Hidden;
+                var overview = new Overview(listVocab);
+                overview.Closed += ChildWindowOnClosed;
+                overview.ShowDialog();
+                
+
             }
         }
     }
