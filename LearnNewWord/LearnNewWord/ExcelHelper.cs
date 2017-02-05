@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace LearnNewWord
@@ -49,8 +50,13 @@ namespace LearnNewWord
                     }
                     
                 }
+                //close and release
                 workbook.Close();
+                Marshal.ReleaseComObject(workbook);
+
+                //quit and release
                 app.Quit();
+                Marshal.ReleaseComObject(app);
             }
             return listVocab;
         }
@@ -64,8 +70,13 @@ namespace LearnNewWord
             {
                 listPart.Add(worksheet.Name);
             }
+            //close and release
             workbook.Close();
+            Marshal.ReleaseComObject(workbook);
+
+            //quit and release
             app.Quit();
+            Marshal.ReleaseComObject(app);
             return listPart;
         }
     }
