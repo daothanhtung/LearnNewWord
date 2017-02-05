@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace LearnNewWord
 {
-    class Helper
+    static class TextHelper
     {
         private const string pattern = @".*\t.*\t.*";
         public static List<Vocab> LoadAllVocabs(string filePath)
@@ -48,6 +45,23 @@ namespace LearnNewWord
                 }
             }
             return listVocab;
+        }
+
+        public static List<string> LoadAllPart(string filePath)
+        {
+            var listPart = new List<string>();
+            var arr = File.ReadAllLines(filePath);
+            var pattern = @"#.+#";
+            foreach (var s in arr)
+            {
+                if (Regex.IsMatch(s, pattern))
+                {
+                    var match = Regex.Match(s, @"#(.+)#");
+                    var value = match.Groups[1].Value;
+                    listPart.Add(value);
+                }
+            }
+            return listPart;
         }
 
         private static bool IsStringSuitable(string s)

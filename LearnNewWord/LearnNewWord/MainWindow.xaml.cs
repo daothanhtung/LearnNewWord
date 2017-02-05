@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,7 +25,8 @@ namespace LearnNewWord
             var folder = fileInfo.Directory;
             if (folder != null)
             {
-                var listTextFile = folder.GetFiles("*.txt");
+                var listTextFile =
+                    folder.EnumerateFiles().Where(file => IsTextFile(file.Name) || IsExcelFile(file.Name));
                 foreach (var info in listTextFile)
                 {
                     ComboBoxItem item = new ComboBoxItem();
@@ -40,18 +41,15 @@ namespace LearnNewWord
         {
             if (ComboBoxFile.SelectedItem != null)
             {
-                var item = ComboBoxFile.SelectedItem as ComboBoxItem;
-                string filePath = (item.Tag as FileInfo).FullName;
-                int time2Next = 1000;
-                int.TryParse(TbTimeToNext.Text, out time2Next);
-                var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
-                                    select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
-                var listVocab = Helper.LoadAllVocabs(filePath, selectedPart);
+                var listVocab = GetListVocab();
                 if (listVocab.Count == 0)
                 {
                     MessageBox.Show("Không có từ vựng", "");
                     return;
                 }
+                //timer
+                int time2Next = 1000;
+                int.TryParse(TbTimeToNext.Text, out time2Next);
                 var notifier = new Notifier(listVocab,
                     time2Next,
                     CbWord.IsChecked != null && (bool)CbWord.IsChecked,
@@ -113,20 +111,23 @@ namespace LearnNewWord
             ListBoxPart.Items.Clear();
             if (File.Exists(filePath))
             {
-                var arr = File.ReadAllLines(filePath);
-                var pattern = @"#.+#";
-                foreach (var s in arr)
+                var listPart = new List<string>();
+                if (IsTextFile(filePath))
                 {
-                    if (Regex.IsMatch(s, pattern))
-                    {
-                        var match = Regex.Match(s, @"#(.+)#");
-                        var value = match.Groups[1].Value;
-                        var checkBox = new CheckBox();
-                        checkBox.Content = value;
-                        checkBox.IsChecked = true;
-                        checkBox.IsThreeState = false;
-                        ListBoxPart.Items.Add(checkBox);
-                    }
+                    listPart = TextHelper.LoadAllPart(filePath);
+                }
+                else if(IsExcelFile(filePath))
+                {
+                    listPart = ExcelHelper.LoadAllPart(filePath);
+                }
+                
+                foreach (var value in listPart)
+                {
+                    var checkBox = new CheckBox();
+                    checkBox.Content = value;
+                    checkBox.IsChecked = true;
+                    checkBox.IsThreeState = false;
+                    ListBoxPart.Items.Add(checkBox);
                 }
             }
         }
@@ -135,12 +136,7 @@ namespace LearnNewWord
         {
             if (ComboBoxFile.SelectedItem != null)
             {
-                var item = ComboBoxFile.SelectedItem as ComboBoxItem;
-                string filePath = (item.Tag as FileInfo).FullName;
-                
-                var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
-                                    select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
-                var listVocab = Helper.LoadAllVocabs(filePath, selectedPart);
+                var listVocab = GetListVocab();
                 if (listVocab.Count == 0)
                 {
                     MessageBox.Show("Không có từ vựng", "");
@@ -154,6 +150,34 @@ namespace LearnNewWord
                 
 
             }
+        }
+
+        private bool IsTextFile(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) && path.EndsWith(".txt");
+        }
+
+        private bool IsExcelFile(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) && path.EndsWith(".xlsx");
+        }
+
+        private List<Vocab> GetListVocab()
+        {
+            var item = ComboBoxFile.SelectedItem as ComboBoxItem;
+            string filePath = (item.Tag as FileInfo).FullName;
+            var selectedPart = (from checkBox in ListBoxPart.Items.OfType<CheckBox>()
+                                select checkBox.IsChecked != null && (bool)checkBox.IsChecked).ToArray();
+            List<Vocab> listVocab = new List<Vocab>();
+            if (IsTextFile(filePath))
+            {
+                listVocab = TextHelper.LoadAllVocabs(filePath, selectedPart);
+            }
+            else if (IsExcelFile(filePath))
+            {
+                listVocab = ExcelHelper.LoadAllVocabs(filePath, selectedPart);
+            }
+            return listVocab;
         }
     }
 }
